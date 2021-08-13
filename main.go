@@ -13,7 +13,7 @@ func UNUSED(x ...interface{}) {} //needed a way to throw away t var
 func wrkTimer(w, b int) {
 	wrk := w // timer setting
 	brk := b // break timer pass through to brkTimer func
-	t := "wrk"
+	tmr := "wrk"
 
 	// ticker setup
 	wTick := time.NewTicker(1 * time.Second)
@@ -41,13 +41,8 @@ func wrkTimer(w, b int) {
 	wTick.Stop()
 	done <- true
 
-	n := nextTimer(t, wrk, brk)
+	nextTimer(tmr, wrk, brk)
 
-	if n == 1 {
-		brkTimer(wrk, brk)
-	} else if n == 2 {
-		wrkTimer(wrk, brk)
-	}
 }
 
 func brkTimer(w, b int) {
@@ -77,39 +72,44 @@ func brkTimer(w, b int) {
 	bTick.Stop()
 	done <- true
 
-	n := nextTimer(timer, wrk, brk)
-
-	if n == 1 {
-		wrkTimer(wrk, brk)
-	} else if n == 2 {
-		brkTimer(wrk, brk)
-	}
+	nextTimer(timer, wrk, brk)
 
 }
 
-func nextTimer(t string, w, b int) int {
-	repeat := t
+func nextTimer(t string, w, b int) {
+	tmr := t
 	brk := b
 	wrk := w
 
-	var n int = 0
+	//var n int = 0
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("\r> Continue with next timer or restart this timer?\ny(es), n(o) or r(estart)")
 	a, _ := reader.ReadString('\n')
 	fmt.Println(a)
 
 	if a == "y\n" {
-		n = 1
+		if tmr == "wrk" {
+			brkTimer(wrk, brk)
+		} else if tmr == "brk" {
+			wrkTimer(wrk, brk)
+		}
+		// n = 1
 	} else if a == "n\n" {
 		os.Exit(3)
 	} else if a == "r\n" {
-		n = 2
 		fmt.Println("Restarting this timer")
+		if tmr == "wrk" {
+			wrkTimer(wrk, brk)
+		} else if tmr == "brk" {
+			brkTimer(wrk, brk)
+		}
+		//n = 2
 	} else {
 		fmt.Println("Unexpected. Please use y, n, or r.")
+		nextTimer(tmr, wrk, brk)
 	}
 
-	return n
+	//return n
 }
 
 func main() {
