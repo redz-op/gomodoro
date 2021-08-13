@@ -106,6 +106,7 @@ func nextTimer(t string, w, b int) int {
 		n = 2
 		fmt.Println("Restarting this timer")
 	} else {
+		fmt.Println("unexpected")
 	}
 
 	return n
