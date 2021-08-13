@@ -8,53 +8,59 @@ import (
 	"time"
 )
 
-func UNUSED(x ...interface{}) {}
+func UNUSED(x ...interface{}) {} //needed a way to throw away t var
 
-func workTimer(w, b int) {
-	min := w
-	brk := b
+func wrkTimer(w, b int) {
+	wrk := w // timer setting
+	brk := b // break timer pass through to brkTimer func
+	t := "wrk"
+
+	// ticker setup
 	wTick := time.NewTicker(1 * time.Second)
 	done := make(chan bool)
 
-	fmt.Printf("\rWork 25min")
+	fmt.Printf("\rWork timer set for %d", wrk)
 
+	// Work countdown timer.
 	go func() {
-		i := min
+		i := wrk
 		for i >= 0 {
 			i = i - 1
 			select {
 			case <-done:
 				return
 			case t := <-wTick.C:
+				fmt.Printf("\r                     ")
 				fmt.Printf("\rMinute: %d:00  ", i)
 				UNUSED(t)
 			}
 		}
 	}()
 
-	time.Sleep(time.Duration(min) * time.Second)
+	time.Sleep(time.Duration(wrk) * time.Second)
 	wTick.Stop()
 	done <- true
 
-	n := nextTimer()
+	n := nextTimer(t, wrk, brk)
 
 	if n == 1 {
-		brkTimer(min, brk)
+		brkTimer(wrk, brk)
 	} else if n == 2 {
-		workTimer(min, brk)
+		wrkTimer(wrk, brk)
 	}
 }
 
 func brkTimer(w, b int) {
-	min := b
+	brk := b
 	wrk := w
+	timer := "brk"
 	bTick := time.NewTicker(1 * time.Second)
 	done := make(chan bool)
 
 	fmt.Printf("\rBreak 5 mins")
 
 	go func() {
-		i := min
+		i := brk
 		for i >= 0 {
 			i = i - 1
 			select {
@@ -67,20 +73,24 @@ func brkTimer(w, b int) {
 		}
 	}()
 
-	time.Sleep(time.Duration(min) * time.Second)
+	time.Sleep(time.Duration(brk) * time.Second)
 	bTick.Stop()
 	done <- true
 
-	n := nextTimer()
+	n := nextTimer(timer, wrk, brk)
 
 	if n == 1 {
-		workTimer(wrk, min)
+		wrkTimer(wrk, brk)
 	} else if n == 2 {
-		brkTimer(wrk, min)
+		brkTimer(wrk, brk)
 	}
+
 }
 
-func nextTimer() int {
+func nextTimer(t string, w, b int) int {
+	repeat := t
+	brk := b
+	wrk := w
 
 	var n int = 0
 	reader := bufio.NewReader(os.Stdin)
@@ -96,8 +106,6 @@ func nextTimer() int {
 		n = 2
 		fmt.Println("Restarting this timer")
 	} else {
-		fmt.Println("Unexpected response. Pleas type 'y', 'n', or 'r'.")
-		nextTimer()
 	}
 
 	return n
@@ -116,25 +124,17 @@ func main() {
 	b := *tBrk
 	d := *tDur
 
-	fmt.Println("work:", w)
-	fmt.Println("break:", b)
-	fmt.Println("durration:", d)
-
 	if *tDur == 90 {
-		fmt.Println("Using Defaults")
+		fmt.Printf("\rUsing Defaults")
 		oaTimer := time.NewTimer(time.Duration(d) * time.Second)
 
-		workTimer(w, b)
+		wrkTimer(w, b)
 		<-oaTimer.C
 	} else if *tDur <= 89 {
 		fmt.Println("Durration should be greater than 2 hours")
 	} else {
 		oaTimer := time.NewTimer(time.Duration(d) * time.Second)
 		<-oaTimer.C
-		workTimer(w, b)
+		wrkTimer(w, b)
 	}
-
-	fmt.Println("work:", *tWrk)
-	fmt.Println("break:", *tBrk)
-	fmt.Println("durration:", *tDur)
 }
