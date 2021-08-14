@@ -106,7 +106,6 @@ func nextTimer(t string, w, b int) {
 		} else if tmr == "brk" {
 			wrkTimer(wrk, brk)
 		}
-		// n = 1
 	} else if a == 'n' {
 		os.Exit(3)
 	} else if a == 'r' {
@@ -117,14 +116,11 @@ func nextTimer(t string, w, b int) {
 		} else if tmr == "brk" {
 			brkTimer(wrk, brk)
 		}
-		//n = 2
 	} else {
 		fmt.Printf(line_clear)
 		fmt.Printf("\rUnexpected. Please use y, n, or r.")
 		nextTimer(tmr, wrk, brk)
 	}
-
-	//return n
 }
 
 func main() {
@@ -132,24 +128,17 @@ func main() {
 
 	tWrk := flag.Int("w", 25, "Work minutes.")
 	tBrk := flag.Int("b", 5, "Break minutes.")
-	tDur := flag.Int("d", 90, "Timer Durration.")
 	flag.Parse()
 
 	w := *tWrk
 	b := *tBrk
-	d := *tDur
 
-	if *tDur == 90 {
+	if *tWrk == 25 && *tBrk == 5 {
 		fmt.Printf("\rUsing Defaults")
-		oaTimer := time.NewTimer(time.Duration(d) * time.Second)
-
 		wrkTimer(w, b)
-		<-oaTimer.C
-	} else if *tDur <= 89 {
-		fmt.Println("Durration should be greater than 2 hours")
 	} else {
-		oaTimer := time.NewTimer(time.Duration(d) * time.Second)
-		<-oaTimer.C
+		fmt.Printf(line_clear)
+		fmt.Printf("\rWork timer = %d and Break timer = %d", w, b)
 		wrkTimer(w, b)
 	}
 }
